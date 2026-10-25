@@ -1,0 +1,1689 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Asansör deneyi</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #eef2f7;
+        --panel: #fff;
+        --ink: #0f2238;
+        --mute: #5a6b80;
+        --line: #d3dce8;
+        --T: #2457ff;
+        --W: #e23d6f;
+        --A: #0a9d7a;
+        --shaft: #16283f;
+        --rail: #3b5575;
+        --cin: #e3ebf4;
+        --frame: #8aa0b8;
+        --floor: #b4c3d4;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #0b1522;
+          --panel: #13233a;
+          --ink: #e8eff8;
+          --mute: #93a6bd;
+          --line: #26394f;
+          --T: #6c8dff;
+          --W: #ff6f98;
+          --A: #2fd3a9;
+          --shaft: #08111d;
+          --cin: #c9d6e5;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #0b1522;
+        --panel: #13233a;
+        --ink: #e8eff8;
+        --mute: #93a6bd;
+        --line: #26394f;
+        --T: #6c8dff;
+        --W: #ff6f98;
+        --A: #2fd3a9;
+        --shaft: #08111d;
+        --cin: #c9d6e5;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          "Sora",
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        line-height: 1.5;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 20px 16px 36px;
+      }
+      h1 {
+        font-size: clamp(26px, 4.6vw, 40px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin: 0 0 4px;
+      }
+      .lead {
+        margin: 0 0 18px;
+        color: var(--mute);
+        max-width: 64ch;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(280px, 420px) 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      .col {
+        display: grid;
+        gap: 16px;
+      }
+      @media (max-width: 880px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .col {
+          display: contents;
+        }
+        .c1 {
+          order: 1;
+        }
+        .c2 {
+          order: 2;
+        }
+        .c3 {
+          order: 3;
+        }
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 14px;
+        min-width: 0;
+      }
+      #scene {
+        width: 100%;
+        height: 600px;
+        display: block;
+        border-radius: 12px;
+      }
+      .read {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      @media (max-width: 520px) {
+        .read {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      .read div {
+        border-radius: 12px;
+        padding: 8px 10px;
+        background: var(--bg);
+      }
+      .read small {
+        display: block;
+        color: var(--mute);
+        font-size: 12px;
+      }
+      .read b {
+        font-size: 20px;
+        font-variant-numeric: tabular-nums;
+      }
+      .read i {
+        font-style: normal;
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .eq {
+        display: grid;
+        gap: 6px;
+        margin: 0 0 8px;
+      }
+      .eq div {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 8px 12px;
+        border-radius: 12px;
+        border: 2px solid var(--line);
+        color: var(--mute);
+        font-size: 15px;
+      }
+      .eq div.on {
+        border-color: var(--T);
+        color: var(--ink);
+        background: color-mix(in srgb, var(--T) 10%, transparent);
+      }
+      .eq em {
+        font-style: normal;
+        font-weight: 600;
+      }
+      .meta {
+        margin: 2px 0 10px;
+        color: var(--mute);
+        font-size: 13px;
+      }
+      #sub {
+        margin: 0 0 12px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        min-height: 4.5em;
+      }
+      .ctl {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px 14px;
+        margin-bottom: 12px;
+      }
+      .ctl label {
+        font-size: 14px;
+        color: var(--mute);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      .ctl label[hidden] {
+        display: none;
+      }
+      .ctl input,
+      .ctl select,
+      #dname {
+        width: 100%;
+        font: inherit;
+        padding: 8px 10px;
+        margin-top: 2px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: var(--bg);
+        color: var(--ink);
+      }
+      .btns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      button {
+        font: inherit;
+        font-weight: 600;
+        font-size: 15px;
+        padding: 10px 16px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        color: var(--ink);
+        cursor: pointer;
+      }
+      button.main {
+        background: var(--T);
+        border-color: var(--T);
+        color: #fff;
+      }
+      button:disabled,
+      input:disabled,
+      select:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid var(--A);
+        outline-offset: 2px;
+      }
+      #graph {
+        width: 100%;
+        height: 720px;
+        display: block;
+        touch-action: pan-y;
+      }
+      #hov {
+        margin: 6px 0 0;
+        font-size: 14px;
+        color: var(--mute);
+        font-variant-numeric: tabular-nums;
+        min-height: 3em;
+      }
+      summary {
+        cursor: pointer;
+        font-weight: 700;
+      }
+      #list {
+        display: grid;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      #list p {
+        margin: 0;
+        color: var(--mute);
+        font-size: 14px;
+      }
+      .it {
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+      }
+      .it .open {
+        flex: 1;
+        text-align: left;
+        padding: 8px 12px;
+        min-width: 0;
+      }
+      .it .open small {
+        display: block;
+        font-weight: 400;
+        color: var(--mute);
+        font-size: 12px;
+      }
+      .it .open.on {
+        border-color: var(--T);
+      }
+      .it .del {
+        padding: 8px 12px;
+        font-size: 13px;
+      }
+      #rep {
+        border: 2px solid var(--T);
+        border-radius: 14px;
+        padding: 12px 14px;
+        margin: 0 0 14px;
+      }
+      .rh {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+      #rep h2 {
+        margin: 0;
+        font-size: 22px;
+      }
+      #rep h3 {
+        margin: 16px 0 6px;
+        font-size: 16px;
+      }
+      #rep h4 {
+        margin: 12px 0 4px;
+        font-size: 14px;
+        color: var(--mute);
+      }
+      .inp {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 8px;
+        margin: 0;
+      }
+      .inp div {
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 6px 10px;
+      }
+      .inp dt {
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .inp dd {
+        margin: 0;
+        font-weight: 600;
+      }
+      .tw {
+        overflow-x: auto;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 14px;
+        font-variant-numeric: tabular-nums;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      #rep p,
+      #rep li {
+        font-size: 15px;
+      }
+      #rep ul {
+        padding-left: 20px;
+        margin: 6px 0;
+      }
+      .fb {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .fb figure {
+        margin: 0;
+        width: 190px;
+        background: var(--bg);
+        border-radius: 12px;
+        padding: 6px 6px 8px;
+      }
+      .fb svg {
+        display: block;
+        margin: 0 auto;
+      }
+      .fb figcaption {
+        font-size: 12.5px;
+        line-height: 1.45;
+        color: var(--ink);
+        font-variant-numeric: tabular-nums;
+      }
+      .fb figcaption b {
+        display: block;
+      }
+      dialog {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--panel);
+        color: var(--ink);
+        padding: 18px;
+        max-width: 380px;
+        width: calc(100% - 32px);
+      }
+      dialog::backdrop {
+        background: rgba(5, 12, 22, 0.55);
+      }
+      dialog h2 {
+        margin: 0 0 6px;
+        font-size: 20px;
+      }
+      dialog p {
+        margin: 0 0 10px;
+        color: var(--mute);
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Asansör deneyi</h1>
+      <p class="lead">
+        Tavana asılı terazide alt alta 1 ile 3 arası cisim asılı. Asansör
+        ivmelenirken terazi ve ipler neden farklı kuvvetler taşır? Deneyi
+        başlat, kaydet, sonra grafikler ve cisim diyagramlarıyla incele.
+      </p>
+      <div class="grid">
+        <div class="col">
+          <div class="card c1">
+            <canvas id="scene" aria-label="Asansör simülasyonu"></canvas>
+          </div>
+          <details class="card c3" open>
+            <summary>Deneyler <span id="cnt"></span></summary>
+            <div id="list"></div>
+          </details>
+        </div>
+        <div class="card c2">
+          <div class="read">
+            <div><small>İvme (a)</small><b id="ra">0.00</b> <i>m/s²</i></div>
+            <div><small>Hız (v)</small><b id="rv">0.00</b> <i>m/s</i></div>
+            <div><small>Yükseklik</small><b id="ry">0.0</b> <i>m</i></div>
+            <div>
+              <small>Teraziden okunan</small><b id="rk">0.0</b> <i>kg</i>
+            </div>
+          </div>
+          <div class="eq" id="eq">
+            <div data-k="up"><span>Yukarı ivme</span><em>T = m(g + a)</em></div>
+            <div data-k="down">
+              <span>Aşağı ivme</span><em>T = m(g − a)</em>
+            </div>
+            <div data-k="const">
+              <span>Sabit hız veya duruyor</span><em>T = mg</em>
+            </div>
+          </div>
+          <p class="meta" id="chain"></p>
+          <p id="sub"></p>
+          <div class="ctl">
+            <label
+              >Cisim sayısı<select id="ncnt">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+              </select></label
+            >
+            <label
+              >Cisim 1 kütlesi (kg)<input
+                id="mass"
+                type="number"
+                value="10"
+                min="0.01"
+                step="any"
+            /></label>
+            <label id="l2" hidden
+              >Cisim 2 kütlesi (kg)<input
+                id="mass2"
+                type="number"
+                value="6"
+                min="0.01"
+                step="any"
+            /></label>
+            <label id="l3" hidden
+              >Cisim 3 kütlesi (kg)<input
+                id="mass3"
+                type="number"
+                value="4"
+                min="0.01"
+                step="any"
+            /></label>
+            <label
+              >Asansörün ivmesi (m/s²)<input
+                id="acc"
+                type="number"
+                value="3"
+                min="0.01"
+                step="any"
+            /></label>
+            <label
+              >İvmelenme süresi (s)<input
+                id="tacc"
+                type="number"
+                value="10"
+                min="0.1"
+                step="any"
+            /></label>
+            <label
+              >Gök cismi (g)<select id="gsel">
+                <option value="274">Güneş (274 m/s²)</option>
+                <option value="3.70">Merkür (3,70 m/s²)</option>
+                <option value="8.87">Venüs (8,87 m/s²)</option>
+                <option value="9.81" selected>Dünya (9,81 m/s²)</option>
+                <option value="1.62">Ay (1,62 m/s²)</option>
+                <option value="3.71">Mars (3,71 m/s²)</option>
+                <option value="24.79">Jüpiter (24,79 m/s²)</option>
+                <option value="10.44">Satürn (10,44 m/s²)</option>
+                <option value="8.69">Uranüs (8,69 m/s²)</option>
+                <option value="11.15">Neptün (11,15 m/s²)</option>
+                <option value="0.62">Plüton (0,62 m/s²)</option>
+              </select></label
+            >
+          </div>
+          <div class="btns">
+            <button class="main" id="up">Yukarı çık</button>
+            <button class="main" id="down">Aşağı in</button>
+            <button class="main" id="stop">Dur</button>
+            <button id="fall">Kablo kopsun</button>
+            <button id="reset">Sıfırla</button>
+          </div>
+          <section id="rep" hidden></section>
+          <canvas id="graph" aria-label="Deney grafikleri"></canvas>
+          <p id="hov"></p>
+        </div>
+      </div>
+    </div>
+
+    <dialog id="dlg">
+      <h2>Deney adı</h2>
+      <p>Deney bitince bu adla Deneyler bölümüne kaydedilecek.</p>
+      <input id="dname" type="text" maxlength="60" aria-label="Deney adı" />
+      <div class="btns" style="margin: 12px 0 0">
+        <button class="main" id="dok">Başlat</button
+        ><button id="dno">Vazgeç</button>
+      </div>
+    </dialog>
+
+    <script>
+      // ---- Sabitler ve durum ----
+      const H = 500,
+        KEY = "asansor-deneyleri-v1";
+      let g = 9.81; // seçili gök cisminin yerçekimi ivmesi
+      const $ = (id) => document.getElementById(id);
+      const css = (n) =>
+        getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+      const esc = (s) =>
+        String(s).replace(
+          /[&<>"]/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+        );
+      const sub = (n) => "₀₁₂₃"[n]; // alt indis: T₁, m₂ ...
+      const f1 = (v) => (v >= 100 ? v.toFixed(0) : v.toFixed(1));
+      const OC = ["#f59e2b", "#e879a8", "#4fb3bf"]; // cisim renkleri
+      const TC = ["#2457ff", "#8b5cf6", "#06b6d4"]; // T₁, T₂, T₃ çizgi renkleri
+      // S: asansörün o anki hali. rec: kayıt edilen deney. phase: accel (hızlan), cruise (sabit hız), brake (yavaşla)
+      const S = {
+        y: 0,
+        v: 0,
+        a: 0,
+        ph: 0,
+        mode: "idle",
+        dir: 0,
+        target: 0,
+        phase: "accel",
+        manual: false,
+        tp: 0,
+        tAcc: 10,
+        note: "",
+        rec: null,
+      };
+      let store = [],
+        view = null,
+        hov = null,
+        pending = null,
+        gv = { d: [], tEnd: 10 };
+      const PH = ["Hızlanma", "Sabit hız", "Frenleme", "Serbest düşüş"];
+      const KIND = {
+        up: "Yukarı yolculuk",
+        down: "Aşağı yolculuk",
+        fall: "Serbest düşüş",
+      };
+
+      // ---- Kayıtlar tarayıcıda (localStorage) saklanır, sayfa yenilense de gitmez ----
+      try {
+        store = JSON.parse(localStorage.getItem(KEY) || "[]");
+      } catch (e) {
+        store = [];
+      }
+      // Eski kayıtlardaki hatalı evre etiketini düzelt: sabit hızda ivme 0 olmalı
+      store.forEach((e) =>
+        e.s.forEach((r) => {
+          if (r[5] === 1 && Math.abs(r[1]) > 1e-6) r[5] = 0;
+        }),
+      );
+      function persist() {
+        try {
+          localStorage.setItem(KEY, JSON.stringify(store));
+          return true;
+        } catch (e) {
+          S.note =
+            "Deney tarayıcıya kaydedilemedi (depolama kapalı ya da dolu).";
+          return false;
+        }
+      }
+
+      // ---- Giriş kutularından değer oku (boşsa varsayılan, 0 olmasın diye küçük alt sınır) ----
+      const DEF = [10, 6, 4];
+      const getMs = () =>
+        ["mass", "mass2", "mass3"]
+          .slice(0, parseInt($("ncnt").value) || 1)
+          .map((id, i) => Math.max(0.01, parseFloat($(id).value) || DEF[i]));
+      const getA = () => Math.max(0.01, parseFloat($("acc").value) || 3);
+      const getT = () => Math.max(0.1, parseFloat($("tacc").value) || 10);
+      const gName = () => $("gsel").selectedOptions[0].text.split(" (")[0];
+      const sum = (a) => a.reduce((s, x) => s + x, 0);
+      const carried = (ms) => ms.map((_, k) => sum(ms.slice(k))); // her ipin taşıdığı toplam kütle
+      const masses = (p) => p.ms || [p.m]; // eski kayıtlarda tek kütle var
+      $("gsel").onchange = () => {
+        g = parseFloat($("gsel").value);
+      };
+      function syncN() {
+        const n = parseInt($("ncnt").value) || 1;
+        $("l2").hidden = n < 2;
+        $("l3").hidden = n < 3;
+        $("chain").textContent =
+          n === 1
+            ? "T: terazinin taşıdığı ipin gerilmesi."
+            : "Her ip, altında asılı bütün cisimleri taşır: T₁ = (m₁+m₂" +
+              (n > 2 ? "+m₃" : "") +
+              ")(g ± a), T₂ = (m₂" +
+              (n > 2 ? "+m₃" : "") +
+              ")(g ± a)" +
+              (n > 2 ? ", T₃ = m₃(g ± a)" : "") +
+              ".";
+      }
+      $("ncnt").onchange = syncN;
+
+      // ---- Canvas boyutu ----
+      function fit(c) {
+        const r = c.getBoundingClientRect(),
+          d = window.devicePixelRatio || 1;
+        c.width = Math.max(1, r.width * d);
+        c.height = Math.max(1, r.height * d);
+        const x = c.getContext("2d");
+        x.setTransform(d, 0, 0, d, 0, 0);
+        return { x, w: r.width, h: r.height };
+      }
+      let sc, gr;
+      function resize() {
+        sc = fit($("scene"));
+        gr = fit($("graph"));
+      }
+      addEventListener("resize", resize);
+
+      // ---- Deney başlatma: önce ad sor ----
+      function flash(t) {
+        S.note = t;
+        setTimeout(() => {
+          if (S.note === t) S.note = "";
+        }, 3000);
+      }
+      function request(kind) {
+        if (S.mode !== "idle") return;
+        if (kind === "fall" && S.y <= -H + 0.01)
+          return flash("Asansör zaten kuyunun en dibinde.");
+        if (kind === "up" && S.y >= H - 0.01)
+          return flash("Asansör zaten en üstte.");
+        if (kind === "down" && S.y <= -H + 0.01)
+          return flash("Asansör zaten en altta.");
+        pending = kind;
+        $("dname").value = "Deney " + (store.length + 1);
+        $("dlg").showModal();
+        $("dname").select();
+      }
+      $("up").onclick = () => request("up");
+      $("down").onclick = () => request("down");
+      $("fall").onclick = () => request("fall");
+      $("dno").onclick = () => $("dlg").close();
+      $("dok").onclick = () => {
+        $("dlg").close();
+        begin(pending, $("dname").value.trim() || "Adsız deney");
+      };
+      $("dname").onkeydown = (e) => {
+        if (e.key === "Enter") $("dok").click();
+      };
+      // Dur: aynı ivmeyle yavaşlayarak durdur (frenleme zaten başladıysa bir şey yapma)
+      $("stop").onclick = () => {
+        if (S.mode === "trip" && S.phase !== "brake") {
+          S.phase = "brake";
+          S.manual = true;
+        }
+      };
+      $("reset").onclick = () => {
+        Object.assign(S, {
+          y: 0,
+          v: 0,
+          a: 0,
+          mode: "idle",
+          note: "",
+          rec: null,
+        });
+      };
+
+      function begin(kind, name) {
+        S.note = "";
+        view = null;
+        hov = null;
+        $("rep").hidden = true;
+        const ms = getMs();
+        S.rec = {
+          name,
+          date: Date.now(),
+          p: {
+            kind,
+            ms,
+            m: sum(ms),
+            A: getA(),
+            tAcc: getT(),
+            g,
+            gName: gName(),
+            y0: S.y,
+            ver: 2,
+          },
+          s: [],
+          t: 0,
+          nextT: 0,
+          lastPh: -1,
+        };
+        renderList();
+        if (kind === "fall") {
+          S.mode = "fall";
+          return;
+        }
+        S.dir = kind === "up" ? 1 : -1;
+        S.target = kind === "up" ? H : -H;
+        S.phase = "accel";
+        S.manual = false;
+        S.tp = 0;
+        S.tAcc = getT();
+        S.mode = "trip";
+      }
+
+      // ---- Fizik: her karede asansörün ivmesini ve hızını güncelle ----
+      function step(dt) {
+        const A = getA();
+        if (S.mode === "trip") {
+          const d = S.dir,
+            rem = (S.target - S.y) * d,
+            v = S.v * d,
+            brake = (v * v) / (2 * A);
+          if (S.phase !== "brake" && v > 0 && rem <= brake) S.phase = "brake";
+          S.ph = { accel: 0, cruise: 1, brake: 2 }[S.phase]; // hedefe yaklaştık: fren
+          let a = 0;
+          if (S.phase === "accel") {
+            // seçilen süre boyunca sabit ivme
+            a = d * A;
+            const use = Math.min(dt, S.tAcc - S.tp);
+            S.tp += use;
+            S.v += a * use;
+            if (S.tp >= S.tAcc - 1e-9) {
+              S.phase = "cruise";
+              S.edge = dt - use;
+            } // edge: karenin geçişten sonra kalan kısmı
+          } else if (S.phase === "brake") {
+            a = -d * A;
+            S.v += a * dt;
+          }
+          S.a = a;
+          if (
+            S.phase === "brake" &&
+            (S.v * d <= 0 || (!S.manual && rem < 0.02))
+          ) {
+            if (!S.manual) S.y = S.target; // hedefe vardıysak tam hedefe oturt
+            S.y = Math.min(H, Math.max(-H, S.y));
+            S.v = 0;
+            S.a = 0;
+            S.mode = "idle";
+            return;
+          }
+          S.y += S.v * dt;
+          if ((S.target - S.y) * d < 0) {
+            S.y = S.target;
+            S.v = 0;
+            S.a = 0;
+            S.mode = "idle";
+          }
+        } else if (S.mode === "fall") {
+          S.ph = 3;
+          S.a = -g;
+          S.v += S.a * dt;
+          S.y += S.v * dt; // serbest düşüş
+          if (S.y <= -H) {
+            S.y = -H;
+            S.v = 0;
+            S.a = 0;
+            S.mode = "idle";
+            S.note = "Kabin kuyunun dibine çarptı. Sıfırla ile yeniden başla.";
+          }
+        } else {
+          S.a = 0;
+        }
+      }
+      const phCode = () => S.ph; // ivmenin hesaplandığı evre (geçiş karesi doğru evreye yazılır)
+
+      // ---- Deney bitince kaydet ve raporu aç ----
+      function finish() {
+        const r = S.rec;
+        S.rec = null;
+        const e = {
+          id: r.date,
+          name: r.name,
+          date: r.date,
+          p: r.p,
+          s: r.s.map((q) =>
+            q.map((v, i) => (i === 5 ? v : Math.round(v * 1000) / 1000)),
+          ),
+        };
+        store.unshift(e);
+        persist();
+        view = e;
+        renderList();
+        showReport(e);
+      }
+
+      // ---- Deneyler listesi ----
+      function renderList() {
+        $("cnt").textContent = store.length ? "(" + store.length + ")" : "";
+        $("list").innerHTML = store.length
+          ? store
+              .map(
+                (e) =>
+                  `<div class="it"><button class="open${view && view.id === e.id ? " on" : ""}" data-open="${e.id}">${esc(e.name)}<small>${KIND[e.p.kind]} · ${masses(e.p).join(" + ")} kg · ${esc(e.p.gName)}</small></button><button class="del" data-del="${e.id}">Sil</button></div>`,
+              )
+              .join("")
+          : "<p>Henüz deney yok. Bir yolculuk başlat, bittiğinde buraya kaydedilir.</p>";
+      }
+      $("list").onclick = (ev) => {
+        const o = ev.target.closest("[data-open]"),
+          d = ev.target.closest("[data-del]");
+        if (o) {
+          view = store.find((e) => String(e.id) === o.dataset.open);
+          hov = null;
+          showReport(view);
+          renderList();
+        }
+        if (d) {
+          // iki tıklamayla sil: ilk tık onay ister
+          if (d.dataset.sure) {
+            store = store.filter((e) => String(e.id) !== d.dataset.del);
+            if (view && String(view.id) === d.dataset.del) {
+              view = null;
+              $("rep").hidden = true;
+            }
+            persist();
+            renderList();
+          } else {
+            d.dataset.sure = 1;
+            d.textContent = "Emin misin?";
+            setTimeout(() => {
+              if (d.isConnected) {
+                delete d.dataset.sure;
+                d.textContent = "Sil";
+              }
+            }, 2500);
+          }
+        }
+      };
+
+      // ---- Serbest cisim diyagramı (SVG): bir cisim, bir evre ----
+      function svgArrow(x, y0, y1, col, txt, side) {
+        const s = y1 > y0 ? 1 : -1,
+          len = Math.abs(y1 - y0);
+        let o = `<line x1="${x}" y1="${y0}" x2="${x}" y2="${y1}" stroke="${col}" stroke-width="3" stroke-linecap="round"/>`;
+        if (len > 8)
+          o += `<path d="M${x} ${y1} L${x - 6} ${y1 - s * 10} L${x + 6} ${y1 - s * 10}Z" fill="${col}"/>`;
+        return (
+          o +
+          `<text x="${x + side}" y="${(y0 + y1) / 2 + 4}" fill="${col}" font-size="13" font-weight="700"${side < 0 ? ' text-anchor="end"' : ""}>${txt}</text>`
+        );
+      }
+      function fbd(i, ms, a, gg, kf) {
+        const n = ms.length,
+          C = carried(ms),
+          m = ms[i];
+        const slack = gg + a < 0,
+          ao = slack ? -gg : a; // ip gevşekse cisim serbest düşer (ivmesi g)
+        const Tu = Math.max(0, C[i] * (gg + a)),
+          Td = i < n - 1 ? Math.max(0, C[i + 1] * (gg + a)) : 0,
+          W = m * gg;
+        const L = (v) => (v > 0 ? Math.max(6, v * kf) : 0);
+        const cT = css("--T"),
+          cW = css("--W"),
+          cA = css("--A"),
+          cx = 90,
+          cy = 105,
+          k = i + 1;
+        let s = `<svg viewBox="0 0 180 215" width="180" height="215" role="img" aria-label="Cisim ${k} serbest cisim diyagramı">`;
+        if (Tu > 0)
+          s += svgArrow(
+            cx - 12,
+            cy - 20,
+            cy - 20 - L(Tu),
+            cT,
+            "T" + sub(k),
+            -8,
+          ); // üstteki ipin gerilmesi (yukarı)
+        if (Td > 0)
+          s += svgArrow(
+            cx - 12,
+            cy + 20,
+            cy + 20 + L(Td),
+            "#8b5cf6",
+            "T" + sub(k + 1),
+            -8,
+          ); // alttaki ipin gerilmesi (aşağı)
+        s += svgArrow(
+          cx + 12,
+          cy + 20,
+          cy + 20 + L(W),
+          cW,
+          "m" + sub(k) + "g",
+          8,
+        ); // ağırlık (aşağı)
+        s += `<rect x="${cx - 24}" y="${cy - 20}" width="48" height="40" rx="7" fill="${OC[i]}"/><text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="13" font-weight="700" fill="#0f2238">m${sub(k)}</text>`;
+        if (Math.abs(ao) > 0.05) {
+          const e = Math.max(-75, Math.min(75, (ao * 28) / gg));
+          s += svgArrow(cx + 62, cy, cy - e, cA, "a", 8);
+        } else
+          s += `<text x="${cx + 30}" y="${cy + 5}" fill="${cA}" font-size="12" font-weight="700">a = 0</text>`;
+        s += "</svg>";
+        const eq =
+          i < n - 1
+            ? `T${sub(k)} − T${sub(k + 1)} − m${sub(k)}g = m${sub(k)}a`
+            : `T${sub(k)} − m${sub(k)}g = m${sub(k)}a`;
+        const nums =
+          `T${sub(k)} = ${f1(Tu)} N` +
+          (i < n - 1 ? `, T${sub(k + 1)} = ${f1(Td)} N` : "") +
+          `, m${sub(k)}g = ${f1(W)} N`;
+        const net = m * ao,
+          dir = net > 0.05 * m ? "yukarı" : net < -0.05 * m ? "aşağı" : "sıfır";
+        return `<figure>${s}<figcaption><b>Cisim ${k} (${m} kg)</b>ΣF = ${eq}<br>${nums}<br>ΣF = ${f1(Math.abs(net))} N (${dir})${slack ? "<br>İp gevşek, T = 0: cisim g ile düşer." : ""}</figcaption></figure>`;
+      }
+
+      // ---- Rapor: girdiler, evre tablosu, cisim diyagramları ve Newton açıklaması ----
+      function segs(s, ver) {
+        const out = [];
+        let c = null;
+        s.forEach((r) => {
+          if (!c || c.ph !== r[5]) {
+            c = {
+              ph: r[5],
+              t0: r[0],
+              t1: r[0],
+              n: 0,
+              sa: 0,
+              sT: 0,
+              v0: r[2],
+              v1: r[2],
+            };
+            out.push(c);
+          }
+          c.t1 = r[0];
+          c.n++;
+          c.sa += r[1];
+          c.sT += r[4];
+          c.v1 = r[2];
+        });
+        out.forEach((c, i) => {
+          if (out[i + 1]) c.t1 = out[i + 1].t0;
+        });
+        if (out.length) out[0].t0 = 0;
+        let v = 0; // deney hep durgun halden başlar: v₁ = v₀ + a·Δt
+        if (ver === 2)
+          out.forEach((c) => {
+            c.v0 = v;
+            c.v1 = v + (c.sa / c.n) * (c.t1 - c.t0);
+            v = c.v1;
+          });
+        else
+          out.forEach((c, i) => {
+            if (out[i + 1]) c.v1 = out[i + 1].v0;
+          }); // eski kayıtlar: ölçülen değerler
+        return out;
+      }
+      function showReport(e) {
+        const p = e.p,
+          ms = masses(p),
+          n = ms.length,
+          C = carried(ms),
+          M = sum(ms),
+          mg = M * p.g,
+          last = e.s[e.s.length - 1],
+          sg = segs(e.s, p.ver);
+        const row = (k, v) => `<div><dt>${k}</dt><dd>${v}</dd></div>`;
+        let h =
+          `<div class="rh"><h2>${esc(e.name)}</h2><button id="rclose">Kapat</button></div>
+<p class="meta">${new Date(e.date).toLocaleString("tr-TR")} · ${KIND[p.kind]}</p>
+<h3>Girdilerin</h3><dl class="inp">` +
+          ms
+            .map((m, i) => row("Cisim " + (i + 1) + " kütlesi", m + " kg"))
+            .join("") +
+          row("Gök cismi", esc(p.gName) + " (g = " + p.g + " m/s²)") +
+          row("Toplam ağırlık (Mg)", mg.toFixed(1) + " N") +
+          (p.kind !== "fall"
+            ? row("Asansör ivmesi", p.A + " m/s²") +
+              row("İvmelenme süresi", p.tAcc + " s")
+            : "") +
+          row("Başlangıç yüksekliği", p.y0.toFixed(1) + " m") +
+          row("Toplam süre", last[0].toFixed(1) + " s") +
+          row("Alınan yol", Math.abs(last[3] - p.y0).toFixed(1) + " m") +
+          "</dl>";
+        h +=
+          `<h3>Evreler</h3><div class="tw"><table><tr><th>Evre</th><th>Süre</th><th>a (m/s²)</th><th>v (m/s)</th>` +
+          ms.map((_, k) => `<th>T${sub(k + 1)} (N)</th>`).join("") +
+          `<th>Okunan (kg)</th></tr>` +
+          sg
+            .map((c) => {
+              const a = c.sa / c.n;
+              return (
+                `<tr><td>${PH[c.ph]}</td><td>${(c.t1 - c.t0).toFixed(1)} s</td><td>${a.toFixed(2)}</td><td>${c.v0.toFixed(1)} → ${c.v1.toFixed(1)}</td>` +
+                C.map(
+                  (cc) => `<td>${f1(Math.max(0, cc * (p.g + a)))}</td>`,
+                ).join("") +
+                `<td>${(Math.max(0, M * (p.g + a)) / p.g).toFixed(2)}</td></tr>`
+              );
+            })
+            .join("") +
+          "</table></div>";
+        // Cisim diyagramları: her evre için her cisim, evre içinde aynı ölçek
+        h +=
+          '<h3>Cisim diyagramları</h3><p class="meta">Yukarı yön pozitif. Oklar aynı evrede aynı ölçekle çizildi, böylece cisimlerin kuvvetlerini karşılaştırabilirsin.</p>';
+        sg.forEach((c) => {
+          const a = c.sa / c.n,
+            big = Math.max(M * (p.g + a), ...ms.map((m) => m * p.g), 1e-9),
+            kf = 75 / big;
+          h += `<h4>${PH[c.ph]} · a = ${a.toFixed(2)} m/s²</h4><div class="fb">${ms.map((_, i) => fbd(i, ms, a, p.g, kf)).join("")}</div>`;
+        });
+        h +=
+          "<h3>Ne oldu, neden?</h3>" +
+          sg
+            .map((c) => {
+              const a = c.sa / c.n,
+                aa = Math.abs(a),
+                T = Math.max(0, M * (p.g + a)),
+                t = `<b>${PH[c.ph]}</b> (${c.t0.toFixed(1)}–${c.t1.toFixed(1)} s): `;
+              const Ms = n > 1 ? "(" + ms.join(" + ") + ")" : M;
+              const chain =
+                n > 1
+                  ? " İpler: " +
+                    C.slice(1)
+                      .map(
+                        (cc, k) =>
+                          `T${sub(k + 2)} = ${cc.toFixed(1).replace(/\.0$/, "")} × (${p.g} ${a >= 0 ? "+" : "−"} ${aa.toFixed(2)}) = ${f1(Math.max(0, cc * (p.g + a)))} N`,
+                      )
+                      .join(", ") +
+                    ". Her ip, altında asılı cisimlerin hepsini taşıdığı için üstteki ipin gerilmesi daha büyüktür."
+                  : "";
+              if (p.kind === "fall")
+                return `<p>${t}Kablo koptu, asansör ve cisimler birlikte a = g = ${p.g} m/s² ile düşüyor. Yay cisimleri çekmiyor: T₁ = M(g − g) = 0 ve ipler gevşek. Terazi 0 gösterir, cisimler ağırlıksız kalır.</p>`;
+              if (a > 0.05) {
+                const why =
+                  c.ph === 2
+                    ? " Aşağı inerken yavaşlamak, ivmenin yukarı yönlü olması demektir."
+                    : "";
+                return `<p>${t}İvme yukarı yönlü (a = +${aa.toFixed(2)} m/s²).${why} Cisimler de yukarı doğru ivmelenmek zorunda, bu yüzden yay onları toplam ağırlıklarından büyük bir kuvvetle çeker. Newton’un 2. yasası: ΣF = T₁ − Mg = Ma, yani T₁ = M(g + a) = ${Ms} × (${p.g} + ${aa.toFixed(2)}) = ${T.toFixed(1)} N. T₁ > Mg = ${mg.toFixed(1)} N olduğundan terazi gerçek ağırlıktan fazla gösterir.${chain}</p>`;
+              }
+              if (a < -0.05) {
+                const why =
+                  c.ph === 2
+                    ? " Yukarı çıkarken yavaşlamak, ivmenin aşağı yönlü olması demektir."
+                    : "";
+                const zero =
+                  M * (p.g + a) < 0
+                    ? " İvme g’den büyük olduğu için ipler gevşer: T = 0 ve cisimler tavana çarpar."
+                    : "";
+                return `<p>${t}İvme aşağı yönlü (a = −${aa.toFixed(2)} m/s²).${why} ΣF = Mg − T₁ = Ma, yani T₁ = M(g − a) = ${Ms} × (${p.g} − ${aa.toFixed(2)}) = ${T.toFixed(1)} N. T₁ < Mg = ${mg.toFixed(1)} N olduğundan terazi gerçek ağırlıktan az gösterir.${zero}${chain}</p>`;
+              }
+              return `<p>${t}İvme yok (a ≈ 0), net kuvvet sıfır: ΣF = T₁ − Mg = 0, yani T₁ = Mg = ${mg.toFixed(1)} N.${
+                n > 1
+                  ? " Her ip altındaki cisimlerin ağırlığını taşır: " +
+                    C.slice(1)
+                      .map((cc, k) => `T${sub(k + 2)} = ${f1(cc * p.g)} N`)
+                      .join(", ") +
+                    "."
+                  : ""
+              } Hız ne olursa olsun, sabit olduğu sürece terazi duran asansördeki değeri gösterir.</p>`;
+            })
+            .join("");
+        h +=
+          "<h3>Tartıdaki kg farkı nasıl bulunur?</h3>" +
+          `<p>Terazi bir kuvvet ölçer, ekrandaki kg değeri T₁ / g’dir. Gerçek kütle M = ${M} kg${n > 1 ? " (" + ms.map((m, i) => "m" + sub(i + 1)).join(" + ") + ", tüm cisimlerin toplamı)" : ""} olduğu için fark, net kuvvetin g’ye bölünmesiyle bulunur: <b>Fark = ΣF / g = M·a / g</b>, burada ΣF = T₁ − Mg = Ma. Okunan değer = M + Fark = M(1 + a/g).</p><ul>` +
+          sg
+            .map((c) => {
+              const a = c.sa / c.n,
+                F = M * a,
+                d = F / p.g,
+                name = "<b>" + PH[c.ph] + "</b>: ";
+              if (M * (p.g + a) < 0 || p.kind === "fall")
+                return `<li>${name}İpler gevşer, terazi 0 kg gösterir. Fark = 0 − ${M} = −${M} kg (cisimler ağırlıksız).</li>`;
+              if (Math.abs(a) < 0.05)
+                return `<li>${name}İvme yok, ΣF = 0 → Fark = 0 → Okunan = ${M} kg (gerçek kütle).</li>`;
+              return `<li>${name}ΣF = M·a = ${M} × ${a.toFixed(2)} = ${F.toFixed(1)} N → Fark = ${F.toFixed(1)} / ${p.g} = ${d >= 0 ? "+" : "−"}${Math.abs(d).toFixed(2)} kg → Okunan = ${M} ${d >= 0 ? "+" : "−"} ${Math.abs(d).toFixed(2)} = ${(M + d).toFixed(2)} kg (a/g = ${(a / p.g).toFixed(2)})</li>`;
+            })
+            .join("") +
+          '</ul><p class="meta">ΣF yukarı yönlüyse terazi gerçek kütleden fazla, aşağı yönlüyse az gösterir. Kütle değişmez, değişen yayın uyguladığı kuvvettir (görünür ağırlık).</p>';
+        h +=
+          `<h3>Akılda kalsın</h3><ul>
+<li>Terazi gerçek ağırlığı değil, yayın cisimlere uyguladığı kuvveti (görünür ağırlığı) gösterir.</li>
+<li>İvme yukarı yönlüyse T &gt; mg, aşağı yönlüyse T &lt; mg, ivme yoksa T = mg.</li>
+<li>Önemli olan hareket yönü değil ivmenin yönüdür: yukarı çıkarken yavaşlarsan terazi azalır.</li>` +
+          (n > 1
+            ? "<li>Seri bağlı cisimlerde her ipin gerilmesi, o ipin altında asılı bütün cisimlerin kütlesiyle (g ± a) çarpılarak bulunur.</li>"
+            : "") +
+          `<li>a = g olursa T = 0 olur, buna ağırlıksızlık denir.</li></ul>
+<p class="meta">Aşağıdaki grafiklerde farenin ya da parmağının üzerine geldiği andaki değerleri okuyabilirsin.</p>`;
+        $("rep").innerHTML = h;
+        $("rep").hidden = false;
+        $("rclose").onclick = () => {
+          view = null;
+          hov = null;
+          $("rep").hidden = true;
+          renderList();
+        };
+        $("rep").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      // ---- Sahne çizimi ----
+      function arrow(x, ax, y0, y1, col, text) {
+        x.strokeStyle = col;
+        x.fillStyle = col;
+        x.lineWidth = 3.5;
+        x.lineCap = "round";
+        x.beginPath();
+        x.moveTo(ax, y0);
+        x.lineTo(ax, y1);
+        x.stroke();
+        const s = y1 > y0 ? 1 : -1;
+        if (Math.abs(y1 - y0) > 6) {
+          x.beginPath();
+          x.moveTo(ax, y1);
+          x.lineTo(ax - 6, y1 - s * 10);
+          x.lineTo(ax + 6, y1 - s * 10);
+          x.closePath();
+          x.fill();
+        }
+        x.font = "700 13px Sora,system-ui,sans-serif";
+        x.textAlign = "left";
+        x.fillText(text, ax + 9, (y0 + y1) / 2 + 4);
+      }
+      function drawScene(ms) {
+        const { x, w, h } = sc,
+          ppm = 14,
+          M = sum(ms),
+          C = carried(ms),
+          Tk = C.map((c) => Math.max(0, c * (g + S.a)));
+        x.clearRect(0, 0, w, h);
+        x.fillStyle = css("--shaft");
+        x.fillRect(0, 0, w, h);
+        const cw = w * 0.74,
+          cx = (w - cw) / 2,
+          ch = h * 0.8,
+          ct = h * 0.1,
+          cb = ct + ch;
+        const sy = (hh) => cb + (S.y - hh) * ppm;
+        x.font = "11px Sora,system-ui,sans-serif";
+        x.textAlign = "left";
+        for (let k = -H; k <= H; k++) {
+          const yy = sy(k);
+          if (yy < -10 || yy > h + 10) continue;
+          const big = k % 5 === 0;
+          x.strokeStyle = css("--rail");
+          x.lineWidth = 1.5;
+          x.beginPath();
+          x.moveTo(0, yy);
+          x.lineTo(big ? 16 : 8, yy);
+          x.moveTo(w, yy);
+          x.lineTo(w - (big ? 16 : 8), yy);
+          x.stroke();
+          if (big) {
+            x.fillStyle = k === 0 ? "#f59e2b" : css("--mute");
+            x.fillText(k === 0 ? "0 m · zemin" : k + " m", 20, yy + 4);
+          }
+        }
+        x.fillStyle = "#000";
+        x.globalAlpha = 0.55;
+        if (sy(-H) < h) x.fillRect(0, sy(-H), w, h);
+        if (sy(H) > 0) x.fillRect(0, 0, w, sy(H) - 30);
+        x.globalAlpha = 1;
+        x.strokeStyle = css("--rail");
+        x.lineWidth = 4;
+        x.beginPath();
+        x.moveTo(cx - 10, 0);
+        x.lineTo(cx - 10, h);
+        x.moveTo(cx + cw + 10, 0);
+        x.lineTo(cx + cw + 10, h);
+        x.stroke();
+        x.strokeStyle = css("--frame");
+        x.lineWidth = 3;
+        x.beginPath();
+        x.moveTo(w / 2, 0);
+        x.lineTo(w / 2, ct);
+        x.stroke();
+        x.fillStyle = css("--cin");
+        x.fillRect(cx, ct, cw, ch);
+        x.fillStyle = css("--floor");
+        x.fillRect(cx, cb - 14, cw, 14);
+        x.strokeStyle = css("--frame");
+        x.lineWidth = 6;
+        x.strokeRect(cx, ct, cw, ch);
+        // Yaylı terazi (tavana asılı)
+        const sx = cx + cw * 0.5,
+          top = ct + 6,
+          tube = 100;
+        const pos = Math.min(1, Tk[0] / (M * g) / 3); // gösterge: 0 ile 3Mg arası
+        x.strokeStyle = css("--frame");
+        x.lineWidth = 3;
+        x.beginPath();
+        x.moveTo(sx, top);
+        x.lineTo(sx, top + 14);
+        x.stroke();
+        x.fillStyle = css("--panel");
+        x.lineWidth = 3;
+        x.beginPath();
+        x.roundRect(sx - 14, top + 14, 28, tube, 8);
+        x.fill();
+        x.stroke();
+        x.strokeStyle = css("--mute");
+        x.lineWidth = 1.2;
+        for (let i = 0; i <= 8; i++) {
+          const ty = top + 24 + (i * (tube - 20)) / 8;
+          x.beginPath();
+          x.moveTo(sx - 9, ty);
+          x.lineTo(sx - (i % 2 ? 3 : 0), ty);
+          x.stroke();
+        }
+        const iy = top + 24 + pos * (tube - 20);
+        x.fillStyle = css("--T");
+        x.beginPath();
+        x.moveTo(sx + 14, iy);
+        x.lineTo(sx + 24, iy - 6);
+        x.lineTo(sx + 24, iy + 6);
+        x.closePath();
+        x.fill();
+        let yy = top + 14 + tube + 18 + pos * 30;
+        x.strokeStyle = css("--frame");
+        x.lineWidth = 3;
+        x.beginPath();
+        x.moveTo(sx, top + 14 + tube);
+        x.lineTo(sx, yy);
+        x.stroke();
+        // Alt alta cisimler: her cismin üstünde o ipin gerilmesi yazar
+        ms.forEach((m, i) => {
+          const bw = 64,
+            bh = Math.min(52, 26 + Math.sqrt(m) * 3.2);
+          x.strokeStyle = css("--frame");
+          x.lineWidth = 2.5;
+          x.beginPath();
+          x.moveTo(sx, yy);
+          x.lineTo(sx, yy + 22);
+          x.stroke();
+          x.fillStyle = "#1d3fbf";
+          x.font = "700 11px Sora,system-ui,sans-serif";
+          x.textAlign = "left";
+          x.fillText(
+            "T" + sub(i + 1) + " = " + f1(Tk[i]) + " N",
+            sx + 8,
+            yy + 15,
+          );
+          x.fillStyle = OC[i];
+          x.beginPath();
+          x.roundRect(sx - bw / 2, yy + 22, bw, bh, 8);
+          x.fill();
+          x.fillStyle = "#0f2238";
+          x.textAlign = "center";
+          x.fillText(
+            i + 1 + ": " + m + " kg",
+            sx,
+            yy + 22 + bh / 2 + 4,
+            bw - 8,
+          );
+          yy += 22 + bh;
+        });
+        x.textAlign = "left";
+        if (Math.abs(S.a) > 0.01)
+          arrow(
+            x,
+            cx + cw - 24,
+            ct + 60,
+            ct + 60 - Math.max(-120, Math.min(120, S.a * 9)),
+            css("--A"),
+            "a",
+          );
+      }
+
+      // ---- Grafikler: deneyin tamamı, evre bantları ve fareyle değer okuma ----
+      const ML = 58,
+        MR = 18; // sol ve sağ boşluk: etiketler taşmasın
+      function nice(v) {
+        const a = Math.abs(v);
+        return a >= 1000
+          ? v.toFixed(0)
+          : a >= 100
+            ? v.toFixed(0)
+            : a >= 10
+              ? v.toFixed(1)
+              : v.toFixed(2);
+      }
+      function drawGraph() {
+        const { x, w, h } = gr;
+        x.clearRect(0, 0, w, h);
+        const d = view ? view.s : S.rec ? S.rec.s : [];
+        const ms0 = getMs(),
+          p = view ? view.p : S.rec ? S.rec.p : { ms: ms0, m: sum(ms0), g };
+        const ms = masses(p),
+          M = sum(ms),
+          C = carried(ms);
+        const last = d.length ? d[d.length - 1][0] : 0;
+        const tEnd = view ? Math.max(last, 1) : Math.max(10, last);
+        gv = { d, tEnd };
+        const mx = (i) => d.reduce((m, r) => Math.max(m, Math.abs(r[i])), 0);
+        const aM = Math.max(mx(1) * 1.3, 1);
+        let vlo = 0,
+          vhi = 1;
+        d.forEach((r) => {
+          vlo = Math.min(vlo, r[2]);
+          vhi = Math.max(vhi, r[2]);
+        });
+        const Tm = Math.max(mx(4) * 1.2, M * p.g * 1.7); // üstte boşluk bırak, çizgi kutuya yapışmasın
+        const top = 20,
+          titleH = 18,
+          gap = 10,
+          axisH = 24,
+          per = (h - top - axisH - 3 * gap) / 4,
+          ph = per - titleH,
+          pw = w - ML - MR,
+          X = (t) => ML + (t / tEnd) * pw;
+        const bands = [];
+        let c = null;
+        d.forEach((r) => {
+          if (!c || c.ph !== r[5]) {
+            c = { ph: r[5], t0: r[0], t1: r[0] };
+            bands.push(c);
+          }
+          c.t1 = r[0];
+        });
+        bands.forEach((b, i) => {
+          if (bands[i + 1]) b.t1 = bands[i + 1].t0;
+        });
+        if (bands.length) bands[0].t0 = 0;
+        const bcol = [css("--A"), css("--T"), css("--W"), css("--W")];
+        const steps = [0.5, 1, 2, 5, 10, 20, 30, 60, 120, 300, 600];
+        const ts = steps.find((s) => tEnd / s <= 8) || 600;
+        const plots = [
+          {
+            t: "İvme a (m/s²)",
+            lo: -aM,
+            hi: aM,
+            lines: [{ f: (r) => r[1], col: css("--A"), lab: "a" }],
+          },
+          {
+            t: "Hız v (m/s)",
+            lo: vlo * 1.15,
+            hi: vhi * 1.2,
+            lines: [{ f: (r) => r[2], col: "#f59e2b", lab: "v" }],
+          },
+          {
+            t: "Yol x (m)",
+            lo: 0,
+            hi: Math.max(1, ...d.map((r) => Math.abs(r[3] - p.y0))) * 1.15,
+            lines: [
+              { f: (r) => Math.abs(r[3] - p.y0), col: "#c026d3", lab: "x" },
+            ],
+          },
+          {
+            t: "İp gerilmeleri (N)",
+            lo: 0,
+            hi: Tm,
+            lines: C.map((cc, k) => ({
+              f: (r) => (r[4] * cc) / M,
+              col: TC[k],
+              name: "T" + sub(k + 1),
+              lab: "T" + sub(k + 1),
+              ref: cc * p.g,
+            })),
+          },
+        ];
+        const Ys = [];
+        plots.forEach((P, n) => {
+          const py = top + n * (per + gap) + titleH,
+            Y = (v) => py + ph - ((v - P.lo) / (P.hi - P.lo)) * ph;
+          Ys.push(Y);
+          // başlık kutunun üstünde (çizgiyle çakışmaz)
+          x.fillStyle = css("--mute");
+          x.font = "12px Sora,system-ui,sans-serif";
+          x.textAlign = "left";
+          x.fillText(P.t, ML, py - 6);
+          if (P.lines[0].name) {
+            let lx = ML + x.measureText(P.t).width + 14;
+            x.font = "700 12px Sora,system-ui,sans-serif";
+            P.lines.forEach((l) => {
+              x.fillStyle = l.col;
+              x.fillText(l.name, lx, py - 6);
+              lx += x.measureText(l.name).width + 12;
+            });
+          }
+          x.save();
+          x.beginPath();
+          x.rect(ML, py, pw, ph);
+          x.clip();
+          bands.forEach((b) => {
+            x.globalAlpha = 0.11;
+            x.fillStyle = bcol[b.ph];
+            x.fillRect(X(b.t0), py, X(b.t1) - X(b.t0), ph);
+          });
+          x.globalAlpha = 1;
+          x.strokeStyle = css("--line");
+          x.lineWidth = 1;
+          for (let t = ts; t < tEnd; t += ts) {
+            x.beginPath();
+            x.moveTo(X(t), py);
+            x.lineTo(X(t), py + ph);
+            x.stroke();
+          }
+          if (P.lo < 0 && P.hi > 0) {
+            x.beginPath();
+            x.moveTo(ML, Y(0));
+            x.lineTo(ML + pw, Y(0));
+            x.stroke();
+          }
+          P.lines.forEach((l) => {
+            if (l.ref === undefined) return;
+            x.setLineDash([5, 4]);
+            x.globalAlpha = 0.6;
+            x.strokeStyle = l.col;
+            x.beginPath();
+            x.moveTo(ML, Y(l.ref));
+            x.lineTo(ML + pw, Y(l.ref));
+            x.stroke();
+            x.setLineDash([]);
+            x.globalAlpha = 1;
+          });
+          P.lines.forEach((l) => {
+            x.strokeStyle = l.col;
+            x.lineWidth = 2.5;
+            x.lineJoin = "round";
+            x.beginPath();
+            d.forEach((r, k) => {
+              const px = X(r[0]),
+                yy = Y(l.f(r));
+              k ? x.lineTo(px, yy) : x.moveTo(px, yy);
+            });
+            x.stroke();
+          });
+          x.restore();
+          x.strokeStyle = css("--line");
+          x.lineWidth = 1;
+          x.strokeRect(ML + 0.5, py + 0.5, pw, ph);
+          x.fillStyle = css("--mute");
+          x.font = "11px Sora,system-ui,sans-serif";
+          x.textAlign = "right";
+          x.fillText(nice(P.hi), ML - 6, py + 10);
+          x.fillText(nice(P.lo), ML - 6, py + ph - 1);
+          if (hov != null && d[hov]) {
+            // imleç üzerindeki noktalar ve değerleri
+            const used = [];
+            P.lines.forEach((l) => {
+              const hx = X(d[hov][0]),
+                val = l.f(d[hov]),
+                hy = Y(val);
+              x.fillStyle = l.col;
+              x.beginPath();
+              x.arc(hx, hy, 4.5, 0, Math.PI * 2);
+              x.fill();
+              const txt =
+                l.lab + " = " + +val.toFixed(Math.abs(val) >= 100 ? 1 : 2);
+              x.font = "700 12px Sora,system-ui,sans-serif";
+              const tw = x.measureText(txt).width + 10;
+              let ty = Math.min(py + ph - 10, Math.max(py + 10, hy - 14));
+              used.forEach((u) => {
+                if (Math.abs(u - ty) < 18) ty = u + 18;
+              }); // etiketler üst üste binmesin
+              used.push(ty);
+              const tx = hx + tw + 12 > ML + pw ? hx - tw - 8 : hx + 8; // sağa sığmıyorsa sola yaz
+              x.globalAlpha = 0.93;
+              x.fillStyle = css("--panel");
+              x.beginPath();
+              x.roundRect(tx, ty - 9, tw, 18, 6);
+              x.fill();
+              x.globalAlpha = 1;
+              x.strokeStyle = l.col;
+              x.lineWidth = 1;
+              x.stroke();
+              x.fillStyle = l.col;
+              x.textAlign = "left";
+              x.fillText(txt, tx + 5, ty + 4);
+            });
+          }
+        });
+        const by = top + 3 * (per + gap) + titleH + ph;
+        x.font = "11px Sora,system-ui,sans-serif";
+        x.textAlign = "center";
+        x.fillStyle = css("--mute");
+        for (let t = 0; t <= tEnd + 1e-9; t += ts)
+          x.fillText(t + " s", X(t), by + 15);
+        x.font = "700 12px Sora,system-ui,sans-serif";
+        bands.forEach((b) => {
+          if (X(b.t1) - X(b.t0) > 64) {
+            x.fillStyle = bcol[b.ph];
+            x.fillText(PH[b.ph], (X(b.t0) + X(b.t1)) / 2, 13);
+          }
+        });
+        const hv = hov != null && d[hov] ? d[hov] : null;
+        if (hv) {
+          x.strokeStyle = css("--ink");
+          x.lineWidth = 1;
+          x.beginPath();
+          x.moveTo(X(hv[0]), top + titleH);
+          x.lineTo(X(hv[0]), by);
+          x.stroke();
+        }
+        $("hov").textContent = hv
+          ? `t = ${hv[0].toFixed(1)} s · a = ${hv[1].toFixed(2)} m/s² · v = ${hv[2].toFixed(2)} m/s · yükseklik = ${hv[3].toFixed(1)} m · yol = ${Math.abs(hv[3] - p.y0).toFixed(1)} m · ` +
+            C.map((cc, k) => `T${sub(k + 1)} = ${f1((hv[4] * cc) / M)} N`).join(
+              " · ",
+            ) +
+            ` · terazi ${(hv[4] / p.g).toFixed(2)} kg · ${PH[hv[5]]}`
+          : d.length
+            ? "Grafiğin üzerine gelince (ya da dokununca) o andaki değerler burada görünür."
+            : "Bir yolculuk başlat, grafikler burada çizilir.";
+      }
+      function setHov(e) {
+        const r = $("graph").getBoundingClientRect(),
+          d = gv.d;
+        const t = ((e.clientX - r.left - ML) / (r.width - ML - MR)) * gv.tEnd;
+        if (!d.length || t < -0.03 * gv.tEnd || t > gv.tEnd * 1.03) {
+          hov = null;
+          return;
+        }
+        let b = 0,
+          bd = 1e9;
+        d.forEach((q, i) => {
+          const dd = Math.abs(q[0] - t);
+          if (dd < bd) {
+            bd = dd;
+            b = i;
+          }
+        });
+        hov = b;
+      }
+      $("graph").addEventListener("pointermove", setHov);
+      $("graph").addEventListener("pointerdown", setHov);
+      $("graph").addEventListener("pointerleave", () => {
+        hov = null;
+      });
+
+      // ---- Ana döngü ----
+      let lastT = performance.now();
+      function frame(now) {
+        const dt = Math.min(0.03, (now - lastT) / 1000);
+        lastT = now;
+        if (!document.hidden) {
+          const prevA = S.a,
+            prevPh = phCode(),
+            prevV = S.v,
+            tBefore = S.rec ? S.rec.t : 0;
+          S.edge = -1;
+          step(dt);
+          const ms = getMs(),
+            M = sum(ms),
+            C = carried(ms),
+            Tk = C.map((c) => Math.max(0, c * (g + S.a)));
+          const r = S.rec;
+          if (r) {
+            // deneyi her 0,1 sn'de bir kaydet (T₁ saklanır)
+            r.t += dt;
+            const T = (a) => Math.max(0, r.p.m * (r.p.g + a));
+            if (S.mode === "idle") {
+              // bitiş örneği: duruş anına yerleştir
+              const tEnd =
+                prevPh === 2
+                  ? tBefore + Math.min(dt, Math.abs(prevV) / r.p.A)
+                  : r.t;
+              r.s.push([
+                Math.max(tEnd, r.s.length ? r.s[r.s.length - 1][0] : 0),
+                prevA,
+                0,
+                S.y,
+                T(prevA),
+                prevPh,
+              ]);
+              finish();
+            } else if (r.t >= r.nextT || S.ph !== r.lastPh || S.edge >= 0) {
+              // evre değişince de bir örnek al
+              const pt = (t, a, v, ph) => r.s.push([t, a, v, S.y, T(a), ph]);
+              if (r.lastPh === -1) {
+                pt(0, S.a, 0, S.ph);
+                r.lastPh = S.ph;
+              } // deneyin ilk anı
+              if (S.edge >= 0) {
+                // hızlanma bu karede bitti
+                const tb = r.t - S.edge;
+                pt(tb, S.a, S.v, 0);
+                pt(tb, 0, S.v, 1);
+                r.lastPh = 1;
+              } else {
+                if (S.ph !== r.lastPh) {
+                  // evre karenin başında değişti
+                  pt(tBefore, prevA, prevV, r.lastPh);
+                  pt(tBefore, S.a, prevV, S.ph);
+                  r.lastPh = S.ph;
+                }
+                if (r.t >= r.nextT) {
+                  pt(r.t, S.a, S.v, S.ph);
+                  r.nextT += 0.1;
+                }
+              }
+            }
+          }
+          const busy = S.mode !== "idle";
+          [
+            "ncnt",
+            "mass",
+            "mass2",
+            "mass3",
+            "acc",
+            "tacc",
+            "gsel",
+            "up",
+            "down",
+            "fall",
+          ].forEach((id) => {
+            if ($(id).disabled !== busy) $(id).disabled = busy;
+          });
+          $("ra").textContent = S.a.toFixed(2);
+          $("rv").textContent = S.v.toFixed(2);
+          $("ry").textContent = S.y.toFixed(1);
+          $("rk").textContent = (Tk[0] / g).toFixed(1);
+          const key = S.a > 0.05 ? "up" : S.a < -0.05 ? "down" : "const";
+          document
+            .querySelectorAll("#eq div")
+            .forEach((e) => e.classList.toggle("on", e.dataset.k === key));
+          const aa = Math.abs(S.a).toFixed(2),
+            Ms = ms.length > 1 ? "(" + ms.join(" + ") + ")" : ms[0];
+          const rest =
+            ms.length > 1
+              ? " · " +
+                Tk.slice(1)
+                  .map((t, k) => `T${sub(k + 2)} = ${f1(t)} N`)
+                  .join(" · ")
+              : "";
+          const tail =
+            Tk[0] < 0.01 * M * g
+              ? S.a < -g - 0.01
+                ? ". İvme g’den büyük: T = 0, cisimler tavana çarpar."
+                : ". Cisimler ağırlıksız."
+              : "";
+          $("sub").textContent =
+            S.note ||
+            (key === "up"
+              ? `T₁ = ${Ms} × (${g} + ${aa}) = ${f1(Tk[0])} N${rest}. Toplam ağırlık Mg = ${f1(M * g)} N, terazi daha fazla gösterir`
+              : key === "down"
+                ? `T₁ = ${Ms} × (${g} − ${aa}) = ${f1(Tk[0])} N${rest}. Toplam ağırlık Mg = ${f1(M * g)} N, terazi daha az gösterir${tail}`
+                : `T₁ = Mg = ${f1(M * g)} N${rest}, ivme yok`);
+          drawScene(ms);
+          drawGraph();
+        }
+        requestAnimationFrame(frame);
+      }
+      syncN();
+      renderList();
+      resize();
+      requestAnimationFrame(frame);
+    </script>
+  </body>
+</html>
